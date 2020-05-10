@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'package:myflutter/Message.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
 import 'ComposeButton.dart';
-import 'MassageCompose.dart';
 import 'MessageDetail.dart';
 
 
@@ -18,14 +14,20 @@ class MessageList extends StatefulWidget {
 }
 
 class _MessageListState extends State<MessageList>  {
-    Future<List<Message>> messages;
+    Future<List<Message>> future;
+    List<Message> messages;
      
 
     void initState() {
      // loadMessageList();
       super.initState();
-      messages = Message.browse();
+      fetch();
     }
+    void fetch() async {
+      future = Message.browse();
+      messages = await future;
+    }
+
     @override
     Widget build(BuildContext context) {
     return Scaffold(
@@ -37,8 +39,9 @@ class _MessageListState extends State<MessageList>  {
           title: Text(widget.title),
           actions: <Widget>[
             //Un button de Rafrechicheur de page manuel
-            IconButton(icon: Icon(Icons.refresh), onPressed:() {
-             var  _message = Message.browse();
+            IconButton(icon: Icon(Icons.refresh), 
+            onPressed:() async {
+             var  _message = await Message.browse();
 
               setState((){
                 messages = _message;
@@ -47,10 +50,9 @@ class _MessageListState extends State<MessageList>  {
           ],
         ),
         body: FutureBuilder(
-          future: messages,
+          future: future,
 
           builder: (BuildContext context, AsyncSnapshot snapshot) {
-
             /** 
              * État actuel de connexion au calcul asynchrone.
              * On a different possibilite SNAPSHOT 
@@ -96,13 +98,12 @@ class _MessageListState extends State<MessageList>  {
                     );
                   },
                 );
-              
             }
           },
 
         ),
-        // on creer un button flottante
-        floatingActionButton: ComposeButton()
+          // on creer un button flottante
+        floatingActionButton: ComposeButton(messages)
             
     );
   }
